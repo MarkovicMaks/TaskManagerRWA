@@ -1,7 +1,15 @@
+
+
+using Microsoft.EntityFrameworkCore;
+using WebApp.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<TaskMgmtContext>(options => {
+    options.UseSqlServer("name=ConnectionStrings:TaskM");
+});
 
 var app = builder.Build();
 
