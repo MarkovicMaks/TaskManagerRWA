@@ -1,5 +1,6 @@
 
 
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 
@@ -10,6 +11,25 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<TaskMgmtContext>(options => {
     options.UseSqlServer("name=ConnectionStrings:TaskM");
 });
+
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(10);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/User/Login";
+        options.LogoutPath = "/User/Logout";
+        options.AccessDeniedPath = "/User/Forbidden";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+    });
 
 var app = builder.Build();
 
@@ -22,6 +42,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
