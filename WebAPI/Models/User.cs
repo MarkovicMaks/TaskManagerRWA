@@ -7,9 +7,9 @@ public partial class User
 {
     public int Id { get; set; }
 
-    public string? Username { get; set; }
+    public string Username { get; set; } = null!;
 
-    public string? Role { get; set; }
+    public string Role { get; set; } = null!;
 
     public string PwdHash { get; set; } = null!;
 
@@ -21,9 +21,11 @@ public partial class User
 
     public string Email { get; set; } = null!;
 
-    public string? Phone { get; set; }
+    public string Phone { get; set; } = null!;
 
     public virtual Manager? Manager { get; set; }
 
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = new List<TaskAssignment>();
+
+    public virtual ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
 }

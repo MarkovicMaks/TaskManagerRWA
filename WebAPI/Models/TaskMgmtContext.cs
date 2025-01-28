@@ -30,36 +30,27 @@ public partial class TaskMgmtContext : DbContext
     public virtual DbSet<UserSkill> UserSkills { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("name=ConnectionStrings:ex6cs");
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server=.\\MSSQLSERVER3;Database=TaskMgmt;User=sa;Password=SQL;TrustServerCertificate=True;MultipleActiveResultSets=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Manager>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Managers__3214EC07E0AEF2EC");
-
-            entity.HasIndex(e => e.UserId, "UQ__Managers__1788CC4D5C522F07").IsUnique();
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.HasIndex(e => e.UserId, "UQ__Managers__1788CC4D816A5785").IsUnique();
 
             entity.HasOne(d => d.User).WithOne(p => p.Manager)
                 .HasForeignKey<Manager>(d => d.UserId)
-                .HasConstraintName("FK__Managers__UserId__52593CB8");
+                .HasConstraintName("FK_Managers_UserId");
         });
 
         modelBuilder.Entity<Skill>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Skills__3214EC078BF45E9F");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(255);
         });
 
         modelBuilder.Entity<Task>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Tasks__3214EC07C3140ED9");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt)
                 .IsRowVersion()
                 .IsConcurrencyToken();
@@ -69,14 +60,11 @@ public partial class TaskMgmtContext : DbContext
 
             entity.HasOne(d => d.Manager).WithMany(p => p.Tasks)
                 .HasForeignKey(d => d.ManagerId)
-                .HasConstraintName("FK__Tasks__ManagerId__534D60F1");
+                .HasConstraintName("FK_Tasks_ManagerId");
         });
 
         modelBuilder.Entity<TaskAssignment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__TaskAssi__3214EC0763F8509F");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.AssignedAt)
                 .IsRowVersion()
                 .IsConcurrencyToken();
@@ -84,31 +72,30 @@ public partial class TaskMgmtContext : DbContext
 
             entity.HasOne(d => d.Task).WithMany(p => p.TaskAssignments)
                 .HasForeignKey(d => d.TaskId)
-                .HasConstraintName("FK__TaskAssig__TaskI__4E88ABD4");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TaskAssignments_TaskId");
 
             entity.HasOne(d => d.User).WithMany(p => p.TaskAssignments)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__TaskAssig__UserI__4F7CD00D");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TaskAssignments_UserId");
         });
 
         modelBuilder.Entity<TaskSkill>(entity =>
         {
-            entity.HasNoKey();
-
-            entity.HasOne(d => d.Skill).WithMany()
+            entity.HasOne(d => d.Skill).WithMany(p => p.TaskSkills)
                 .HasForeignKey(d => d.SkillId)
-                .HasConstraintName("FK__TaskSkill__Skill__4D94879B");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TaskSkills_SkillId");
 
-            entity.HasOne(d => d.Task).WithMany()
+            entity.HasOne(d => d.Task).WithMany(p => p.TaskSkills)
                 .HasForeignKey(d => d.TaskId)
-                .HasConstraintName("FK__TaskSkill__TaskI__4CA06362");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TaskSkills_TaskId");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC07DF61039B");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Email).HasMaxLength(256);
             entity.Property(e => e.FirstName).HasMaxLength(256);
             entity.Property(e => e.LastName).HasMaxLength(256);
@@ -121,15 +108,15 @@ public partial class TaskMgmtContext : DbContext
 
         modelBuilder.Entity<UserSkill>(entity =>
         {
-            entity.HasNoKey();
-
-            entity.HasOne(d => d.Skill).WithMany()
+            entity.HasOne(d => d.Skill).WithMany(p => p.UserSkills)
                 .HasForeignKey(d => d.SkillId)
-                .HasConstraintName("FK__UserSkill__Skill__5165187F");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserSkills_SkillId");
 
-            entity.HasOne(d => d.User).WithMany()
+            entity.HasOne(d => d.User).WithMany(p => p.UserSkills)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__UserSkill__UserI__5070F446");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserSkills_UserId");
         });
 
         OnModelCreatingPartial(modelBuilder);

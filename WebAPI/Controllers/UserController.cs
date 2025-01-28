@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using WebAPI.DTOs;
 using WebAPI.Models;
 using WebAPI.Security;
@@ -64,7 +64,7 @@ namespace WebAPI.Controllers
                     Phone = userDto.Phone,
                 };
 
-                // Add user and save changes to database
+                // Add user and save changes to the database
                 _context.Add(user);
                 _context.SaveChanges();
 
@@ -72,11 +72,11 @@ namespace WebAPI.Controllers
                 userDto.Id = user.Id;
 
                 return Ok(userDto);
-
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, innerException);
             }
         }
     }

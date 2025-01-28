@@ -20,4 +20,6 @@ public partial class Task
     public virtual Manager? Manager { get; set; }
 
     public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = new List<TaskAssignment>();
+
+    public virtual ICollection<TaskSkill> TaskSkills { get; set; } = new List<TaskSkill>();
 }

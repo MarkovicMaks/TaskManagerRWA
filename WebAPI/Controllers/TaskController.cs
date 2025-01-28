@@ -48,7 +48,7 @@ namespace WebAPI.Controllers
 
 
         // GET api/<TaskController>/5
-        
+
         [HttpGet("{id}")]
         public ActionResult<TaskDto> Get(int id)
         {
@@ -86,7 +86,7 @@ namespace WebAPI.Controllers
 
             var newTask = new Models.Task
             {
-                
+
                 ManagerId = value.ManagerId,
                 Title = value.Title,
                 Description = value.Description,
