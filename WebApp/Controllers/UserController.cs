@@ -7,6 +7,7 @@ using System.Security.Claims;
 using WebApp.Models;
 using WebApp.ViewModels;
 using WebApp.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Controllers
 {
@@ -19,6 +20,7 @@ namespace WebApp.Controllers
             _context = context;
         }
         // GET: UserController
+        [Authorize(Roles = "Admin")]
         public ActionResult Index()
         {
             try
@@ -96,7 +98,7 @@ namespace WebApp.Controllers
 
             if (loginVm.ReturnUrl != null)
                 return LocalRedirect(loginVm.ReturnUrl);
-            else if (existingUser.Role == "Employee")
+            else if (existingUser.Role == "Admin")
                 return RedirectToAction("Index", "AdminHome");
             else if (existingUser.Role == "Menager")
                 return RedirectToAction("Index", "AdminHome");
