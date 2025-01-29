@@ -6,9 +6,12 @@
 
 <h1>Tasks</h1>
 
-<p>
-    <a asp-action="Create" class="btn btn-outline-primary">Create New</a>
-</p>
+@if (User.IsInRole("Admin") || User.IsInRole("Menager"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-outline-primary">Create New</a>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -26,7 +29,7 @@
             </th>
             <th></th>
             <th></th>
-            <th></th>
+            
         </tr>
     </thead>
     <tbody>
@@ -44,12 +47,20 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Status)
             </td>
-                <td>@Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "btn btn-info" })</td>
+            <td>@Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "btn btn-info" })</td>
+            @if (User.IsInRole("Admin") || User.IsInRole("Menager"))
+            {
                 <td>@Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-outline-danger" })</td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })
-                
-            </td>
+                <td> @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })</td>
+            }
+                else if (User.IsInRole("Employee"))
+            {
+                <td> @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })</td>
+                <td>
+                        @Html.ActionLink("Peticion", "Create", "TaskAssignment", new { taskId = item.Id }, new { @class = "btn btn-outline-primary" })
+                </td>
+            }
+            
         </tr>
 }
     </tbody>
