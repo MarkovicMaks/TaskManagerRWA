@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using TM.BL.Models;
 using WebApp.ViewModels;
 
@@ -36,66 +38,69 @@ namespace WebApp.Controllers
         }
 
         // GET: TaskAssignmentController/Create
-        public ActionResult Create()
+        public IActionResult Create(int taskId)
         {
-            return View();
+            var username = User.Identity.Name;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return BadRequest("User not found in cookies.");
+            }
+
+            // Get the corresponding UserId from the database
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user == null)
+            {
+                return BadRequest("User not found in database.");
+            }
+
+            // Create a new TaskAssignment
+            var taskAssignment = new TaskAssignment
+            {
+                TaskId = taskId,
+                UserId = user.Id,
+                Status = "Pending"
+            };
+
+            _context.TaskAssignments.Add(taskAssignment);
+            _context.SaveChanges();
+
+            // Redirect back to the Task Index page
+            return RedirectToAction("Index", "Task");
         }
 
-        // POST: TaskAssignmentController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public IActionResult Accept(int id)
         {
-            try
+            var taskAssignment = _context.TaskAssignments.FirstOrDefault(t => t.Id == id);
+
+            if (taskAssignment == null)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            catch
-            {
-                return View();
-            }
+
+            taskAssignment.Status = "Accepted";
+            _context.SaveChanges();
+
+            return RedirectToAction("Index"); // Refresh task assignments list
         }
 
-        // GET: TaskAssignmentController/Edit/5
-        public ActionResult Edit(int id)
+        // Deny Task Assignment
+        public IActionResult Deny(int id)
         {
-            return View();
+            var taskAssignment = _context.TaskAssignments.FirstOrDefault(t => t.Id == id);
+
+            if (taskAssignment == null)
+            {
+                return NotFound();
+            }
+
+            taskAssignment.Status = "Denied";
+            _context.SaveChanges();
+
+            return RedirectToAction("Index"); // Refresh task assignments list
         }
 
-        // POST: TaskAssignmentController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
 
-        // GET: TaskAssignmentController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: TaskAssignmentController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
     }
 }

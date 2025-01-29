@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Controllers
 {
+    
     public class UserController : Controller
     {
         private readonly TaskMgmtContext _context;

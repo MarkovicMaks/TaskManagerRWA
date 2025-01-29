@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebApp.ViewModels.TaskVm>
+﻿@model WebApp.ViewModels.SearchVM
 
 @{
     ViewData["Title"] = "Index";
@@ -12,20 +12,52 @@
         <a asp-action="Create" class="btn btn-outline-primary">Create New</a>
     </p>
 }
+
+<form asp-action="Search" method="GET">
+    <div class="row">
+        <div class="col-8">
+            <input asp-for="Q" class="form-control" placeholder="Search Tasks" />
+        </div>
+        <div class="col-auto">
+            <label class="form-label mt-1">Sort by:</label>
+        </div>
+        <div class="col-auto">
+            <select asp-for="OrderBy" class="form-select">
+                <option value="id">(default)</option>
+                <option>Title</option>
+                <option>Status</option>
+                <option>Manager</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select asp-for="Size" class="form-select">
+                <option>3</option>
+                <option>5</option>
+                <option>10</option>
+                <option>20</option>
+                <option>50</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <input type="submit" value="Go" name="submit" class="btn btn-primary" />
+        </div>
+    </div>
+</form>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                @Html.DisplayNameFor(model => model.Tasks.FirstOrDefault().Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ManagerName)
+                @Html.DisplayNameFor(model => model.Tasks.FirstOrDefault().Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                @Html.DisplayNameFor(model => model.Tasks.FirstOrDefault().ManagerName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Status)
+                @Html.DisplayNameFor(model => model.Tasks.FirstOrDefault().Status)
             </th>
             <th></th>
             <th></th>
@@ -33,7 +65,7 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Tasks) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)
@@ -48,16 +80,15 @@
                 @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>@Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "btn btn-info" })</td>
+            <td> @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })</td>
             @if (User.IsInRole("Admin") || User.IsInRole("Menager"))
             {
                 <td>@Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-outline-danger" })</td>
-                <td> @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })</td>
             }
                 else if (User.IsInRole("Employee"))
             {
-                <td> @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })</td>
                 <td>
-                        @Html.ActionLink("Peticion", "Create", "TaskAssignment", new { taskId = item.Id }, new { @class = "btn btn-outline-primary" })
+                    @Html.ActionLink("Take", "Create", "TaskAssignment", new { taskId = item.Id }, new { @class = "btn btn-outline-success" })
                 </td>
             }
             
@@ -65,3 +96,38 @@
 }
     </tbody>
 </table>
+<nav>
+    <ul class="pagination">
+        @for (int i = Model.FromPager; i <= Model.ToPager; i++)
+        {
+            var linkText = @i.ToString();
+            if (i != 1 && i == Model.FromPager)
+            {
+                linkText = "«";
+            }
+            else if (i != Model.LastPage && i == Model.ToPager)
+            {
+                linkText = "»";
+            }
+
+            var linkClass = "page-item";
+            if (i == Model.Page)
+            {
+                linkClass = "page-item active";
+            }
+            <li class="@linkClass">
+                @Html.ActionLink(
+                         @linkText,
+                         "Search",
+                         new
+                         {
+                             q = Model.Q,
+                             orderby = Model.OrderBy,
+                             page = i,
+                             size = Model.Size
+                         },
+                         new { @class = "page-link" })
+            </li>
+        }
+    </ul>
+</nav>

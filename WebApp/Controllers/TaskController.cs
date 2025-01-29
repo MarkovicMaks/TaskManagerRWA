@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol;
+using System.Configuration;
+using System.Threading.Tasks;
 using TM.BL.Models;
 using WebApp.ViewModels;
 
@@ -17,11 +19,13 @@ namespace WebApp.Controllers
     {
         private readonly TaskMgmtContext _context;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public TaskController(TaskMgmtContext context, IMapper mapper)
+        public TaskController(TaskMgmtContext context, IMapper mapper, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
+            _configuration = configuration;
         }
         // GET: TaskController
         public ActionResult Index()
@@ -320,6 +324,79 @@ namespace WebApp.Controllers
                 return View(task);
             }
         }
+
+
+        public ActionResult Search(SearchVM searchVm)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(searchVm.Q) && string.IsNullOrEmpty(searchVm.Submit))
+                {
+                    searchVm.Q = Request.Cookies["query"];
+                }
+
+                IQueryable<TM.BL.Models.Task> tasks = _context.Tasks
+                    .Include(x => x.Manager);
+
+                if (!string.IsNullOrEmpty(searchVm.Q))
+                {
+                    tasks = tasks.Where(x => x.Title.Contains(searchVm.Q) || x.Description.Contains(searchVm.Q));
+                }
+
+                // We need this for pager
+                var filteredCount = tasks.Count();
+
+                switch (searchVm.OrderBy.ToLower())
+                {
+                    case "id":
+                        tasks = tasks.OrderBy(x => x.Id);
+                        break;
+                    case "title":
+                        tasks = tasks.OrderBy(x => x.Title);
+                        break;
+                    case "status":
+                        tasks = tasks.OrderBy(x => x.Status);
+                        break;
+                    case "manager":
+                        tasks = tasks.OrderBy(x => x.Manager.User.Username);
+                        break;
+                }
+
+                tasks = tasks.Skip((searchVm.Page - 1) * searchVm.Size).Take(searchVm.Size);
+                searchVm.Tasks =
+                    tasks.Select(x => new TaskVm
+                    {
+                        Id = x.Id,
+                        Title = x.Title,
+                        Description = x.Description,
+                        ManagerId = x.ManagerId,
+                        ManagerName = x.Manager.User.Username,
+                        Status = x.Status
+                    })
+                    .ToList();
+
+                // BEGIN PAGER
+                var expandPages = _configuration.GetValue<int>("Paging:ExpandPages");
+                searchVm.LastPage = (int)Math.Ceiling(1.0 * filteredCount / searchVm.Size);
+                searchVm.FromPager = searchVm.Page > expandPages ?
+                    searchVm.Page - expandPages :
+                    1;
+                searchVm.ToPager = (searchVm.Page + expandPages) < searchVm.LastPage ?
+                    searchVm.Page + expandPages :
+                    searchVm.LastPage;
+                // END PAGER
+
+                var option = new CookieOptions { Expires = DateTime.Now.AddMinutes(15) };
+                Response.Cookies.Append("query", searchVm.Q ?? "", option);
+
+                return View("Index", searchVm); // Ensure it returns the Index view with search results
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
 
     }
 }

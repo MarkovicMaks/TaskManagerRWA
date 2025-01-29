@@ -54,7 +54,7 @@ public partial class TaskMgmtContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.Description).IsUnicode(false);
             entity.Property(e => e.Status).HasMaxLength(255);
             entity.Property(e => e.Title).HasMaxLength(255);
 
