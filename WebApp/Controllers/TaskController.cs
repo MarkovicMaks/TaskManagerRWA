@@ -1,10 +1,13 @@
-﻿using Humanizer.Localisation;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Humanizer.Localisation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using WebApp.Models;
+using NuGet.Protocol;
+using TM.BL.Models;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers
@@ -13,26 +16,36 @@ namespace WebApp.Controllers
     public class TaskController : Controller
     {
         private readonly TaskMgmtContext _context;
+        private readonly IMapper _mapper;
 
-        public TaskController(TaskMgmtContext context)
+        public TaskController(TaskMgmtContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
         // GET: TaskController
         public ActionResult Index()
         {
             try
             {
+                //if (TempData.ContainsKey("newTask"))
+                //{
+                //    var newTask = ((string)TempData["newTask"]).FromJson<TaskVm>();
+                //}
+                //var taskVms = _context.Tasks
+                //    .Include(x => x.Manager)
+                //    .Select(x => new TaskVm
+                //    {
+                //        Id = x.Id,
+                //        Title = x.Title,
+                //        Description = x.Description,
+                //        ManagerId = x.ManagerId,
+                //        Status = x.Status,
+                //    }).ToList();
                 var taskVms = _context.Tasks
-                    .Include(x => x.Manager)
-                    .Select(x => new TaskVm
-                {
-                    Id = x.Id,
-                    Title = x.Title,
-                    Description = x.Description,
-                    ManagerId = x.ManagerId,
-                    Status = x.Status,
-                }).ToList();
+                 .Include(x => x.Manager) 
+                 .ProjectTo<TaskVm>(_mapper.ConfigurationProvider) 
+                 .ToList();
 
                 return View(taskVms);
             }
@@ -91,7 +104,7 @@ namespace WebApp.Controllers
                     ModelState.AddModelError("", "Failed to create a Task");
                     return View();
                 }
-                var newTask = new Models.Task
+                var newTask = new TM.BL.Models.Task
                 {
                     Title = task.Title,
                     ManagerId = task.ManagerId,
@@ -236,7 +249,7 @@ namespace WebApp.Controllers
         // POST: TaskController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, Models.Task task)
+        public ActionResult Delete(int id, TM.BL.Models.Task task)
         {
             try
             {

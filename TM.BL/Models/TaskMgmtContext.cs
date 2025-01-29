@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace WebAPI.Models;
+namespace TM.BL.Models;
 
 public partial class TaskMgmtContext : DbContext
 {

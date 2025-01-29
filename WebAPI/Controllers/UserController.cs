@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using WebAPI.DTOs;
-using WebAPI.Models;
+using TM.BL.Models;
 using WebAPI.Security;
 
 namespace WebAPI.Controllers

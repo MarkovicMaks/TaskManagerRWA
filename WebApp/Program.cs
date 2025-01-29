@@ -2,7 +2,8 @@
 
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using WebApp.Models;
+using TaskManager.App.AutoMapper;
+using TM.BL.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<TaskMgmtContext>(options => {
     options.UseSqlServer("name=ConnectionStrings:TaskM");
 });
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddDistributedMemoryCache();
 

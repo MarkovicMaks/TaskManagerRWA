@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebAPI.Models;
+namespace TM.BL.Models;
 
 public partial class User
 {
@@ -25,7 +25,7 @@ public partial class User
 
     public virtual Manager? Manager { get; set; }
 
-    public virtual ICollection<TaskAssignment> TaskAssignments { get; set; } = new List<TaskAssignment>();
+    public virtual ICollection<TaskAssignment> TaskAssignments { get; } = new List<TaskAssignment>();
 
-    public virtual ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
+    public virtual ICollection<UserSkill> UserSkills { get; } = new List<UserSkill>();
 }

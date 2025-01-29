@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.DTOs;
-using WebAPI.Models;
+using TM.BL.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -84,7 +84,7 @@ namespace WebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var newTask = new Models.Task
+            var newTask = new TM.BL.Models.Task
             {
 
                 ManagerId = value.ManagerId,

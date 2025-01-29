@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using WebApp.Models;
+using TM.BL.Models;
 using WebApp.ViewModels;
 using WebApp.Security;
 using Microsoft.AspNetCore.Authorization;

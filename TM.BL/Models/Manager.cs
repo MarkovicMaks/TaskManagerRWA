@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebAPI.Models;
+namespace TM.BL.Models;
 
 public partial class Manager
 {
@@ -9,7 +9,7 @@ public partial class Manager
 
     public int? UserId { get; set; }
 
-    public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public virtual ICollection<Task> Tasks { get; } = new List<Task>();
 
     public virtual User? User { get; set; }
 }
