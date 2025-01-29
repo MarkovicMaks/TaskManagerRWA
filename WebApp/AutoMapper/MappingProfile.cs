@@ -14,6 +14,11 @@ namespace TaskManager.App.AutoMapper
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
             CreateMap<Manager, TaskVm>();
+
+            CreateMap<Skill, SkillVM>()
+            .ForMember(dest => dest.TaskSkillIds, opt => opt.MapFrom(src => src.TaskSkills.Select(ts => ts.Id)))
+            .ForMember(dest => dest.UserSkillIds, opt => opt.MapFrom(src => src.UserSkills.Select(us => us.Id)));
+            
         }
     }
 }
