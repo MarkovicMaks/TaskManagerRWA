@@ -13,7 +13,7 @@ namespace TaskManager.App.AutoMapper
                .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.Manager.User.Username))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
-
+            CreateMap<Manager, TaskVm>();
         }
     }
 }

@@ -2,6 +2,7 @@
     Layout = "_Layout";
 
     var user = ViewContext.HttpContext.User;
+    
     if (user == null)
     {
         Layout = "_Layout";
@@ -10,7 +11,11 @@
     {
         Layout = "_LayoutAdmin";
     }
-    else if (user.IsInRole("User"))
+    else if (user.IsInRole("Menager"))
+    {
+        Layout = "_LayoutAdmin";
+    }
+    else if (user.IsInRole("Employee"))
     {
         Layout = "_LayoutUser";
     }

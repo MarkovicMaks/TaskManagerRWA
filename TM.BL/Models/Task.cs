@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace TM.BL.Models;
 
@@ -13,7 +14,8 @@ public partial class Task
 
     public string? Description { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    [Timestamp]
+    public byte[] CreatedAt { get; set; }
 
     public string? Status { get; set; }
 

@@ -28,10 +28,7 @@ namespace WebApp.Controllers
         {
             try
             {
-                //if (TempData.ContainsKey("newTask"))
-                //{
-                //    var newTask = ((string)TempData["newTask"]).FromJson<TaskVm>();
-                //}
+                
                 //var taskVms = _context.Tasks
                 //    .Include(x => x.Manager)
                 //    .Select(x => new TaskVm
@@ -42,8 +39,7 @@ namespace WebApp.Controllers
                 //        ManagerId = x.ManagerId,
                 //        Status = x.Status,
                 //    }).ToList();
-                var taskVms = _context.Tasks
-                 .Include(x => x.Manager) 
+                var taskVms = _context.Tasks.Include(x => x.Manager) 
                  .ProjectTo<TaskVm>(_mapper.ConfigurationProvider) 
                  .ToList();
 
@@ -155,14 +151,8 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var taskVm = new TaskVm
-            {
-                Id = task.Id,
-                Title = task.Title,
-                Description = task.Description,
-                ManagerId = task.ManagerId,
-                Status = task.Status
-            };
+            var taskVm = _mapper.Map<TaskVm>(task);
+
 
             return View(taskVm);
         }
@@ -224,7 +214,7 @@ namespace WebApp.Controllers
         {
             var task = _context.Tasks
                 .Include(x => x.Manager)
-                .ThenInclude(m => m.User) // Assuming Manager is linked to a User
+                .ThenInclude(m => m.User)
                 .FirstOrDefault(x => x.Id == id);
 
             if (task == null)
@@ -232,15 +222,7 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var taskVm = new TaskVm
-            {
-                Id = task.Id,
-                Title = task.Title,
-                Description = task.Description,
-                ManagerId = task.ManagerId,
-                ManagerName = task.Manager.User.Username, // Assuming Manager has a User with Username
-                Status = task.Status
-            };
+            var taskVm = _mapper.Map<TaskVm>(task);
 
             return View(taskVm);
         }

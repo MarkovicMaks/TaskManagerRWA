@@ -18,7 +18,8 @@ namespace WebApp.ViewModels
 
         public string? Description { get; set; }
 
-        public DateTime CreatedAt { get; set; } 
+        [Timestamp]
+        public byte[] CreatedAt { get; set; }
 
         public string? Status { get; set; }
     }

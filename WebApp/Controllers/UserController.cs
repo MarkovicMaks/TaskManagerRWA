@@ -78,8 +78,8 @@ namespace WebApp.Controllers
             }
 
             var claims = new List<Claim>() {
-                new Claim(ClaimTypes.Name, loginVm.Username),
-                new Claim(ClaimTypes.Role, existingUser.Role)
+                new Claim(ClaimTypes.Name, loginVm.Password),
+                new Claim(ClaimTypes.Role, existingUser.Role ?? "Emploeyee")
             };
 
             var claimsIdentity = new ClaimsIdentity(
