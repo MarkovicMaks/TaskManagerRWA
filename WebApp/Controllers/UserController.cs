@@ -20,7 +20,7 @@ namespace WebApp.Controllers
             _context = context;
         }
         // GET: UserController
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Menager")]
         public ActionResult Index()
         {
             try
@@ -100,7 +100,7 @@ namespace WebApp.Controllers
                 return LocalRedirect(loginVm.ReturnUrl);
             else if (existingUser.Role == "Admin")
                 return RedirectToAction("Index", "AdminHome");
-            else if (existingUser.Role == "Menager")
+            else if (existingUser.Role == "Manager")
                 return RedirectToAction("Index", "AdminHome");
             else if (existingUser.Role == "Employee")
                 return RedirectToAction("Index", "Home");

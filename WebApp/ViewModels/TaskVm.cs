@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
 namespace WebApp.ViewModels
@@ -18,9 +19,15 @@ namespace WebApp.ViewModels
 
         public string? Description { get; set; }
 
-        [Timestamp]
-        public byte[] CreatedAt { get; set; }
+        
+        public DateTime? CreatedAt { get; set; }
 
         public string? Status { get; set; }
+
+        public List<int> SelectedSkillIds { get; set; } = new();
+        [Display(Name = "Skills")]
+        [ValidateNever]
+        public List<string> AssignedSkills { get; set; } = new();
+        public IEnumerable<SelectListItem> SkillOptions { get; set; } = new List<SelectListItem>();
     }
 }

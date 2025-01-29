@@ -28,17 +28,6 @@ namespace WebApp.Controllers
         {
             try
             {
-                
-                //var taskVms = _context.Tasks
-                //    .Include(x => x.Manager)
-                //    .Select(x => new TaskVm
-                //    {
-                //        Id = x.Id,
-                //        Title = x.Title,
-                //        Description = x.Description,
-                //        ManagerId = x.ManagerId,
-                //        Status = x.Status,
-                //    }).ToList();
                 var taskVms = _context.Tasks.Include(x => x.Manager) 
                  .ProjectTo<TaskVm>(_mapper.ConfigurationProvider) 
                  .ToList();
@@ -54,8 +43,23 @@ namespace WebApp.Controllers
         // GET: TaskController/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            var task = _context.Tasks
+                .Where(x => x.Id == id) // Filter only the task we need
+                .Include(x => x.Manager)
+                .Include(x => x.TaskSkills)
+                .ThenInclude(ts => ts.Skill)
+                .ProjectTo<TaskVm>(_mapper.ConfigurationProvider) // Use AutoMapper projection
+                .FirstOrDefault();
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            return View(task);
         }
+
+
 
         // GET: TaskController/Create
         public ActionResult Create()
@@ -71,7 +75,14 @@ namespace WebApp.Controllers
                         Text = user.Username
                     }
                 )
-                .ToList(); 
+                .ToList();
+
+            ViewBag.SkillDdlItems = _context.Skills
+                .Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                }).ToList();
 
             return View();
         }
@@ -79,51 +90,65 @@ namespace WebApp.Controllers
         // POST: TaskController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(TaskVm task)
+        public ActionResult Create(TaskVm taskVm)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
                     ViewBag.ManagerDdlItems = _context.Managers
-                    .Join(
-                        _context.Users,
-                        manager => manager.UserId,
-                        user => user.Id,
-                        (manager, user) => new SelectListItem
+                        .Join(_context.Users,
+                            manager => manager.UserId,
+                            user => user.Id,
+                            (manager, user) => new SelectListItem
+                            {
+                                Value = manager.Id.ToString(),
+                                Text = user.Username
+                            }
+                        ).ToList();
+
+                    taskVm.SkillOptions = _context.Skills
+                        .Select(s => new SelectListItem
                         {
-                            Value = manager.Id.ToString(),
-                            Text = user.Username
-                        }
-                    )
-                    .ToList();
-                    ModelState.AddModelError("", "Failed to create a Task");
-                    return View();
+                            Value = s.Id.ToString(),
+                            Text = s.Name
+                        }).ToList();
+
+                    ModelState.AddModelError("", "Failed to create a Task.");
+                    return View(taskVm);
                 }
+
                 var newTask = new TM.BL.Models.Task
                 {
-                    Title = task.Title,
-                    ManagerId = task.ManagerId,
-                    Description = task.Description,
-                    Status = task.Status,
+                    Title = taskVm.Title,
+                    ManagerId = taskVm.ManagerId,
+                    Description = taskVm.Description,
+                    Status = taskVm.Status
                 };
-                _context.Tasks.Add(newTask);
 
-                try
+                _context.Tasks.Add(newTask);
+                _context.SaveChanges();
+
+                if (taskVm.SelectedSkillIds?.Any() == true)
                 {
+                    foreach (var skillId in taskVm.SelectedSkillIds)
+                    {
+                        _context.TaskSkills.Add(new TaskSkill
+                        {
+                            TaskId = newTask.Id,
+                            SkillId = skillId
+                        });
+                    }
                     _context.SaveChanges();
                 }
-                catch (Exception ex)
-                {
-                    var innerException = ex.InnerException?.Message ?? ex.Message;
-                    ModelState.AddModelError("", $"Error saving task: {innerException}");
-                    return View(task);
-                }
+
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                ModelState.AddModelError("", $"Error saving task: {innerException}");
+                return View(taskVm);
             }
         }
 
@@ -144,18 +169,31 @@ namespace WebApp.Controllers
                 )
                 .ToList();
 
-            // Find the task by ID and map to the ViewModel
-            var task = _context.Tasks.Include(x => x.Manager).FirstOrDefault(x => x.Id == id);
+            ViewBag.SkillDdlItems = _context.Skills
+                .Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.Name
+                })
+                .ToList();
+
+            var task = _context.Tasks
+                .Include(x => x.Manager)
+                .Include(x => x.TaskSkills) 
+                .ThenInclude(ts => ts.Skill)
+                .FirstOrDefault(x => x.Id == id);
+
             if (task == null)
             {
                 return NotFound();
             }
 
             var taskVm = _mapper.Map<TaskVm>(task);
-
+            taskVm.SelectedSkillIds = task.TaskSkills.Select(ts => ts.SkillId).ToList();
 
             return View(taskVm);
         }
+
 
         // POST: TaskController/Edit/5
         [HttpPost]
@@ -166,7 +204,7 @@ namespace WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    // Repopulate dropdown in case of errors
+                    // Repopulate dropdowns in case of errors
                     ViewBag.ManagerDdlItems = _context.Managers
                         .Join(
                             _context.Users,
@@ -179,12 +217,24 @@ namespace WebApp.Controllers
                             }
                         )
                         .ToList();
+
+                    ViewBag.SkillDdlItems = _context.Skills
+                        .Select(s => new SelectListItem
+                        {
+                            Value = s.Id.ToString(),
+                            Text = s.Name
+                        })
+                        .ToList();
+
                     ModelState.AddModelError("", "Please correct the errors and try again.");
                     return View(task);
                 }
 
                 // Retrieve the existing task from the database
-                var dbTask = _context.Tasks.FirstOrDefault(x => x.Id == id);
+                var dbTask = _context.Tasks
+                    .Include(x => x.TaskSkills) // Include the skills
+                    .FirstOrDefault(x => x.Id == id);
+
                 if (dbTask == null)
                 {
                     return NotFound();
@@ -195,6 +245,21 @@ namespace WebApp.Controllers
                 dbTask.Description = task.Description;
                 dbTask.ManagerId = task.ManagerId;
                 dbTask.Status = task.Status;
+
+                // Update TaskSkills (Remove old skills and add new ones)
+                _context.TaskSkills.RemoveRange(dbTask.TaskSkills); // Remove existing skills
+
+                if (task.SelectedSkillIds != null && task.SelectedSkillIds.Any())
+                {
+                    foreach (var skillId in task.SelectedSkillIds)
+                    {
+                        _context.TaskSkills.Add(new TaskSkill
+                        {
+                            TaskId = dbTask.Id,
+                            SkillId = skillId
+                        });
+                    }
+                }
 
                 _context.SaveChanges();
 
@@ -207,6 +272,7 @@ namespace WebApp.Controllers
                 return View(task);
             }
         }
+
 
 
         // GET: TaskController/Delete/5

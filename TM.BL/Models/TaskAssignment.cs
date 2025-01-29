@@ -11,8 +11,6 @@ public partial class TaskAssignment
 
     public int UserId { get; set; }
 
-    public byte[] AssignedAt { get; set; } = null!;
-
     public string Status { get; set; } = null!;
 
     public virtual Task Task { get; set; } = null!;

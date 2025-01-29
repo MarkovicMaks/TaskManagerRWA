@@ -11,6 +11,8 @@ namespace TaskManager.App.AutoMapper
             CreateMap<TM.BL.Models.Task, TaskVm>()
                 
                .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.Manager.User.Username))
+               .ForMember(dest => dest.SelectedSkillIds, opt => opt.MapFrom(src => src.TaskSkills.Select(ts => ts.SkillId)))
+                .ForMember(dest => dest.AssignedSkills, opt => opt.MapFrom(src => src.TaskSkills.Select(ts => ts.Skill.Name)))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
             CreateMap<Manager, TaskVm>();

@@ -52,8 +52,8 @@ public partial class TaskMgmtContext : DbContext
         modelBuilder.Entity<Task>(entity =>
         {
             entity.Property(e => e.CreatedAt)
-                .IsRowVersion()
-                .IsConcurrencyToken();
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.Status).HasMaxLength(255);
             entity.Property(e => e.Title).HasMaxLength(255);
@@ -65,9 +65,6 @@ public partial class TaskMgmtContext : DbContext
 
         modelBuilder.Entity<TaskAssignment>(entity =>
         {
-            entity.Property(e => e.AssignedAt)
-                .IsRowVersion()
-                .IsConcurrencyToken();
             entity.Property(e => e.Status).HasMaxLength(255);
 
             entity.HasOne(d => d.Task).WithMany(p => p.TaskAssignments)
