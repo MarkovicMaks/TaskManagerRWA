@@ -19,23 +19,7 @@ namespace WebAPI.Controllers
             _context = context;
         }
 
-        [HttpGet("[action]")]
-        public ActionResult GetToken()
-        {
-            try
-            {
-                // The same secure key must be used here to create JWT,
-                // as the one that is used by middleware to verify JWT
-                var secureKey = _configuration["JWT:SecureKey"];
-                var serializedToken = JwtTokenProvider.CreateToken(secureKey, 10);
-
-                return Ok(serializedToken);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
+        
         [HttpPost("[action]")]
         public ActionResult<UserDto> Register(UserDto userDto)
         {
@@ -77,6 +61,33 @@ namespace WebAPI.Controllers
             {
                 var innerException = ex.InnerException?.Message ?? ex.Message;
                 return StatusCode(500, innerException);
+            }
+        }
+        [HttpPost("[action]")]
+        public ActionResult Login(UserLoginDto loginDto)
+        {
+            try
+            {
+                var genericLoginFail = "Incorrect username or password";
+
+                // Try to get a user from database
+                var existingUser = _context.Users.FirstOrDefault(x => x.Username == loginDto.Username);
+                if (existingUser == null)
+                    return Unauthorized(genericLoginFail);
+
+                // Check is password hash matches
+                var b64hash = PasswordHashProvider.GetHash(loginDto.Password, existingUser.PwdSalt);
+                if (b64hash != existingUser.PwdHash)
+                    return Unauthorized(genericLoginFail);
+
+                var secureKey = _configuration["JWT:SecureKey"];
+                var serializedToken = JwtTokenProvider.CreateToken(secureKey, 60, loginDto.Username);
+
+                return Ok(serializedToken);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
     }
