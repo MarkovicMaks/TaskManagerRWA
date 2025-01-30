@@ -18,10 +18,15 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/exercise_13.styles.css" asp-append-version="true" />
+    <style>
+        body, .navbar, .footer, .container, .badge, .nav-link, a, .text-muted {
+            color: #b0dab7 !important;
+        }
+    </style>
 </head>
-<body>
+<body style="background-color: #010101 !important;">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3" style="background-color: #010101 !important;">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Task Manager</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -31,16 +36,16 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Task" asp-action="Index">Task</a>
+                            <a class="nav-link" asp-area="" asp-controller="Task" asp-action="Search">Task</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="User" asp-action="Index">Employees</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Skill" asp-action="Index">Skils</a>
+                            <a class="nav-link" asp-area="" asp-controller="Skill" asp-action="Index">Skills</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="TaskAssignment" asp-action="Index">Pettitions</a>
+                            <a class="nav-link" asp-area="" asp-controller="TaskAssignment" asp-action="Index">Petitions</a>
                         </li>
                         @if (!loggedIn)
                         {

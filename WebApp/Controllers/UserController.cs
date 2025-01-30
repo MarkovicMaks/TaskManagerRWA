@@ -26,7 +26,7 @@ namespace WebApp.Controllers
         {
             try
             {
-                var UserVms = _context.Users.Select(x => new UserVm
+                var UserVms = _context.Users.Select(x => new UserVM
                 {
                     Id = x.Id,
                     Username = x.Username,
@@ -125,7 +125,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(UserVm userVm)
+        public IActionResult Register(UserVM userVm)
         {
             try
             {
@@ -137,6 +137,12 @@ namespace WebApp.Controllers
                 // Hash the password
                 var b64salt = PasswordHashProvider.GetSalt();
                 var b64hash = PasswordHashProvider.GetHash(userVm.Password, b64salt);
+
+                //Congradulation you are a manager (if you have no friends)
+                if(_context.Users.Count()  <= 0)
+                {
+                    userVm.Role = "Menager";
+                }
 
                 // Create user from DTO and hashed password
                 var user = new User
@@ -167,6 +173,71 @@ namespace WebApp.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [Authorize]
+        public IActionResult ProfileDetails()
+        {
+            var username = HttpContext.User.Identity.Name;
+
+            var userDb = _context.Users.First(x => x.Username == username);
+            var userVm = new UserVM
+            {
+                Id = userDb.Id,
+                Username = userDb.Username,
+                FirstName = userDb.FirstName,
+                LastName = userDb.LastName,
+                Email = userDb.Email,
+                Phone = userDb.Phone,
+            };
+
+            return View(userVm);
+        }
+
+        [Authorize]
+        public IActionResult ProfileEdit()
+        {
+            var username = HttpContext.User.Identity.Name;
+            var userDb = _context.Users.First(x => x.Username == username);
+            var userVm = new UserVM
+            {
+                Id = userDb.Id,
+                Username = userDb.Username,
+                FirstName = userDb.FirstName,
+                LastName = userDb.LastName,
+                Email = userDb.Email,
+                Phone = userDb.Phone,
+            };
+
+            return View(userVm);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult ProfileEdit(int id, UserVM userVm)
+        {
+            var userDb = _context.Users.First(x => x.Username == userVm.Username);
+            userDb.FirstName = userVm.FirstName;
+            userDb.LastName = userVm.LastName;
+            userDb.Email = userVm.Email;
+            userDb.Phone = userVm.Phone;
+
+            _context.SaveChanges();
+
+            return RedirectToAction("ProfileDetails");
+        }
+        public JsonResult GetProfileData(int id)
+        {
+            var userDb = _context.Users.First(x => x.Id == id);
+            return Json(new
+            {
+                userDb.FirstName,
+                userDb.LastName,
+                userDb.Email,
+                userDb.Phone,
+            });
+        }
+
+
 
         // GET: UserController/Delete/5
         public ActionResult Delete(int id)

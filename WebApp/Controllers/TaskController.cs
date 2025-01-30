@@ -33,7 +33,7 @@ namespace WebApp.Controllers
             try
             {
                 var taskVms = _context.Tasks.Include(x => x.Manager) 
-                 .ProjectTo<TaskVm>(_mapper.ConfigurationProvider) 
+                 .ProjectTo<TaskVM>(_mapper.ConfigurationProvider) 
                  .ToList();
 
                 return View(taskVms);
@@ -52,7 +52,7 @@ namespace WebApp.Controllers
                 .Include(x => x.Manager)
                 .Include(x => x.TaskSkills)
                 .ThenInclude(ts => ts.Skill)
-                .ProjectTo<TaskVm>(_mapper.ConfigurationProvider) // Use AutoMapper projection
+                .ProjectTo<TaskVM>(_mapper.ConfigurationProvider) // Use AutoMapper projection
                 .FirstOrDefault();
 
             if (task == null)
@@ -94,7 +94,7 @@ namespace WebApp.Controllers
         // POST: TaskController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(TaskVm taskVm)
+        public ActionResult Create(TaskVM taskVm)
         {
             try
             {
@@ -192,7 +192,7 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var taskVm = _mapper.Map<TaskVm>(task);
+            var taskVm = _mapper.Map<TaskVM>(task);
             taskVm.SelectedSkillIds = task.TaskSkills.Select(ts => ts.SkillId).ToList();
 
             return View(taskVm);
@@ -202,7 +202,7 @@ namespace WebApp.Controllers
         // POST: TaskController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, TaskVm task)
+        public ActionResult Edit(int id, TaskVM task)
         {
             try
             {
@@ -292,7 +292,7 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var taskVm = _mapper.Map<TaskVm>(task);
+            var taskVm = _mapper.Map<TaskVM>(task);
 
             return View(taskVm);
         }
@@ -364,7 +364,7 @@ namespace WebApp.Controllers
 
                 tasks = tasks.Skip((searchVm.Page - 1) * searchVm.Size).Take(searchVm.Size);
                 searchVm.Tasks =
-                    tasks.Select(x => new TaskVm
+                    tasks.Select(x => new TaskVM
                     {
                         Id = x.Id,
                         Title = x.Title,

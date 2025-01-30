@@ -10,7 +10,7 @@
         public int FromPager { get; set; }
         public int ToPager { get; set; }
         public string Submit { get; set; }
-        public IEnumerable<TaskVm> Tasks { get; set; }
+        public IEnumerable<TaskVM> Tasks { get; set; }
     }
     
 }

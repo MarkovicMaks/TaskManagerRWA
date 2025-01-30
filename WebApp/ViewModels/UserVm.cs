@@ -3,7 +3,7 @@ using TM.BL.Models;
 
 namespace WebApp.ViewModels
 {
-    public class UserVm
+    public class UserVM
     {
         public int Id { get; set; }
         public string? Role { get; set; }

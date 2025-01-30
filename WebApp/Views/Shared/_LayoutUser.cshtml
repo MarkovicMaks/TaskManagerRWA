@@ -27,9 +27,9 @@
         }
     </style>
 </head>
-<body>
+<body style="background-color: #b0dab7 !important;">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-info border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3" style="background-color: #b0dab7 !important;">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">exercise_13</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -39,10 +39,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="Index">Tasks</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="Search">Search</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="Search">Tasks</a>
                         </li>
                         @if (!loggedIn)
                         {
@@ -61,7 +58,7 @@
                         var userName = this.ViewContext.HttpContext.User?.Identity.Name ?? "(user not logged in)";
                     }
                     <div class="d-flex">
-                        <div class="badge bg-primary">@userName</div>
+                        <a asp-action="ProfileDetails" asp-controller="User" class="btn btn-primary btn-sm">@userName</a>
                     </div>
                 </div>
             </div>
@@ -73,11 +70,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - exercise_13 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace WebApp.ViewModels
 {
-    public class TaskVm
+    public class TaskVM
     {
         public int Id { get; set; }
         [Display(Name = "Select Manager")]

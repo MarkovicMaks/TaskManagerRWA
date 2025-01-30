@@ -18,5 +18,33 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    
+    margin: 0;
+    padding: 0;
 }
+
+/*main {
+    position: relative;
+    z-index: 1; 
+    padding-top: 20px;
+}*/
+
+/*.background-container {
+    position: absolute;
+    background-color: aquamarine;
+    top: 55px;
+    left: 0;
+    width: 130vw;
+    height: calc(100vh - 0px);
+    background: url('/images/BasicBackground.jpg') left bottom no-repeat;
+    background-size: auto 100%;
+    z-index: -1;
+}*/
+
+/*.navbar {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}*/
