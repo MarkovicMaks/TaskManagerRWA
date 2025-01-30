@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,6 +10,7 @@ using WebApp.ViewModels;
 
 namespace WebApp.Controllers
 {
+    [Authorize]
     public class TaskAssignmentController : Controller
     {
         private readonly TaskMgmtContext _context;
@@ -26,11 +28,28 @@ namespace WebApp.Controllers
                 .Include(t => t.Task)
                 .Include(u => u.User)
                 .ToList();
+
             var viewModel = _mapper.Map<List<TaskAssignmentVM>>(taskAssignments);
+
+            var acceptedTasks = _context.TaskAssignments
+                .Where(t => t.Status == "Accepted")
+                .Select(t => t.TaskId)
+                .Distinct()
+                .ToHashSet();  
+
+            var deniedTasks = _context.TaskAssignments
+                .Where(t => t.Status == "Denied")
+                .Select(t => t.TaskId)
+                .Distinct()
+                .ToHashSet();
+
+            ViewBag.AcceptedTasks = acceptedTasks;
+            ViewBag.DeniedTasks = deniedTasks;
 
             return View(viewModel);
         }
-        
+
+
         // GET: TaskAssignmentController/Details/5
         public ActionResult Details(int id)
         {
@@ -54,6 +73,7 @@ namespace WebApp.Controllers
             {
                 return BadRequest("User not found in database.");
             }
+            
 
             // Create a new TaskAssignment
             var taskAssignment = new TaskAssignment

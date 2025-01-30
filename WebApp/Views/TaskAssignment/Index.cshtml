@@ -1,7 +1,8 @@
 ﻿@model IEnumerable<WebApp.ViewModels.TaskAssignmentVM>
 
 @{
-    ViewData["Title"] = "Task Assignments";
+    var acceptedTasks = ViewBag.AcceptedTasks as HashSet<int> ?? new HashSet<int>();
+    var deniedTasks = ViewBag.DeniedTasks as HashSet<int> ?? new HashSet<int>();
 }
 
 <h1>Task Assignments</h1>
@@ -18,15 +19,25 @@
     <tbody>
         @foreach (var item in Model)
         {
+            bool isTaskAccepted = acceptedTasks.Contains(item.TaskId);
+            bool isTaskDenied = deniedTasks.Contains(item.TaskId);
+            @if (!isTaskAccepted)
+            {
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.TaskName)</td>
                 <td>@Html.DisplayFor(modelItem => item.UserName)</td>
                 <td>@Html.DisplayFor(modelItem => item.Status)</td>
-                <td>
-                    @Html.ActionLink("Accept", "Accept", "TaskAssignment", new { id = item.Id }, new { @class = "btn btn-outline-success" })  
-                    @Html.ActionLink("Deny", "Deny", "TaskAssignment", new { id = item.Id }, new { @class = "btn btn-outline-danger" })
-                </td>
+                @if (!isTaskDenied){
+                    <td>
+                        @Html.ActionLink("Accept", "Accept", "TaskAssignment", new { id = item.Id }, new { @class = "btn btn-outline-success" })
+                        @Html.ActionLink("Deny", "Deny", "TaskAssignment", new { id = item.Id }, new { @class = "btn btn-outline-danger" })
+                    </td>
+                    }
+                else{
+                        <td> <span class="badge bg-danger">Denied</span></td>
+                }
             </tr>
+            }
         }
     </tbody>
 </table>

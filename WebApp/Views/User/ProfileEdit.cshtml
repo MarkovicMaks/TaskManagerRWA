@@ -1,4 +1,4 @@
-﻿@model exercise_14.ViewModels.UserVM
+﻿@model WebApp.ViewModels.UserVM
 
 @{
     ViewData["Title"] = "ProfileEdit";
@@ -36,7 +36,7 @@
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary mt-3" />
+                <input type="submit" value="Save" class="btn btn-success mt-3" />
                 <a asp-action="Index" asp-action="Index" asp-controller="Home" class="btn btn-outline-primary mt-3">Home</a>
             </div>
         </form>

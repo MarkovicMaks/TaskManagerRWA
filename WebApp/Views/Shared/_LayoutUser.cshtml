@@ -19,10 +19,10 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/exercise_13.styles.css" asp-append-version="true" />
     <style>
-        .btn-primary,
-        .btn-primary:hover,
-        .btn-primary:active,
-        .btn-primary:visited {
+        .btn-success,
+        .btn-success:hover,
+        .btn-success:active,
+        .btn-success:visited {
             background-color: #8064A2 !important;
         }
     </style>
@@ -31,7 +31,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3" style="background-color: #b0dab7 !important;">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">exercise_13</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Lumon Industries</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -58,7 +58,7 @@
                         var userName = this.ViewContext.HttpContext.User?.Identity.Name ?? "(user not logged in)";
                     }
                     <div class="d-flex">
-                        <a asp-action="ProfileDetails" asp-controller="User" class="btn btn-primary btn-sm">@userName</a>
+                        <a asp-action="ProfileDetails" asp-controller="User" class="btn btn-outline-success btn-sm">@userName</a>
                     </div>
                 </div>
             </div>

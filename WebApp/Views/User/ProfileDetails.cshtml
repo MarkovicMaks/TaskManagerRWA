@@ -10,11 +10,11 @@
     <partial name="_ProfileDetailsPartial"></partial>
 </div>
 <div>
-    @Html.ActionLink("Edit profile", "ProfileEdit", new { id = Model.Id }, new { id = "ajaxEdit", @class = "btn btn-primary" })
-    <a asp-action="Index" asp-controller="Home" class="btn btn-outline-primary">Home</a>
+    @Html.ActionLink("Edit profile", "ProfileEdit", new { id = Model.Id }, new { id = "ajaxEdit", @class = "btn btn-outline-success" })
+    <a asp-action="Index" asp-controller="Home" class="btn btn-outline-success">Home</a>
     <p />
-    <button id="ajaxUpdate" class="btn btn-primary mt-3">Ajax Refresh Data</button>
-    <a id="ajaxUpdate" class="btn btn-primary mt-3"
+    <button id="ajaxUpdate" class="btn  btn-outline-success mt-3">Ajax Refresh Data</button>
+    <a id="ajaxUpdate" class="btn btn-outline-success mt-3"
             data-ajax="true"
             data-ajaxmethod="GET"
             data-ajax-url="/User/ProfileDetailsPartial"
@@ -52,7 +52,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button id="SaveProfileButton" type="button" class="btn btn-primary">Save profile</button>
+                <button id="SaveProfileButton" type="button" class="btn btn-success">Save profile</button>
             </div>
         </div>
     </div>

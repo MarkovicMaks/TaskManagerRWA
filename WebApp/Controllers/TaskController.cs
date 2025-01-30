@@ -28,21 +28,31 @@ namespace WebApp.Controllers
             _configuration = configuration;
         }
         // GET: TaskController
-        public ActionResult Index()
-        {
-            try
-            {
-                var taskVms = _context.Tasks.Include(x => x.Manager) 
-                 .ProjectTo<TaskVM>(_mapper.ConfigurationProvider) 
-                 .ToList();
+        //public ActionResult Index()
+        //{
+        //    try
+        //    {
+        //        var taskVms = _context.Tasks
+        //            .Include(x => x.Manager)
+        //            .ProjectTo<TaskVM>(_mapper.ConfigurationProvider)
+        //            .ToList();
 
-                return View(taskVms);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //        var assignedTaskIds = _context.TaskAssignments
+        //            .Select(t => t.TaskId)
+        //            .Distinct()
+        //            .ToList(); 
+
+        //        ViewBag.AssignedTaskIds = assignedTaskIds; 
+
+        //        return View(taskVms);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+
 
         // GET: TaskController/Details/5
         public ActionResult Details(int id)
@@ -374,6 +384,12 @@ namespace WebApp.Controllers
                         Status = x.Status
                     })
                     .ToList();
+
+                var assignedTaskIds = _context.TaskAssignments
+                    .Select(t => t.TaskId)
+                    .Distinct()
+                    .ToList();
+                ViewBag.AssignedTaskIds = assignedTaskIds;
 
                 // BEGIN PAGER
                 var expandPages = _configuration.GetValue<int>("Paging:ExpandPages");

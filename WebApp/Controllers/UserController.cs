@@ -101,7 +101,7 @@ namespace WebApp.Controllers
                 return LocalRedirect(loginVm.ReturnUrl);
             else if (existingUser.Role == "Admin")
                 return RedirectToAction("Index", "AdminHome");
-            else if (existingUser.Role == "Manager")
+            else if (existingUser.Role == "Menager")
                 return RedirectToAction("Index", "AdminHome");
             else if (existingUser.Role == "Employee")
                 return RedirectToAction("Index", "Home");
@@ -194,10 +194,9 @@ namespace WebApp.Controllers
         }
 
         [Authorize]
-        public IActionResult ProfileEdit()
+        public IActionResult ProfileEdit(int id)
         {
-            var username = HttpContext.User.Identity.Name;
-            var userDb = _context.Users.First(x => x.Username == username);
+            var userDb = _context.Users.First(x => x.Id == id);
             var userVm = new UserVM
             {
                 Id = userDb.Id,
@@ -215,7 +214,7 @@ namespace WebApp.Controllers
         [HttpPost]
         public IActionResult ProfileEdit(int id, UserVM userVm)
         {
-            var userDb = _context.Users.First(x => x.Username == userVm.Username);
+            var userDb = _context.Users.First(x => x.Id == id);
             userDb.FirstName = userVm.FirstName;
             userDb.LastName = userVm.LastName;
             userDb.Email = userVm.Email;
@@ -225,6 +224,7 @@ namespace WebApp.Controllers
 
             return RedirectToAction("ProfileDetails");
         }
+
         public JsonResult GetProfileData(int id)
         {
             var userDb = _context.Users.First(x => x.Id == id);
@@ -237,6 +237,66 @@ namespace WebApp.Controllers
             });
         }
 
+        [HttpPut]
+        public ActionResult SetProfileData(int id, [FromBody] UserVM userVm)
+        {
+            var userDb = _context.Users.First(x => x.Id == id);
+            userDb.FirstName = userVm.FirstName;
+            userDb.LastName = userVm.LastName;
+            userDb.Email = userVm.Email;
+            userDb.Phone = userVm.Phone;
+
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [Authorize]
+        public IActionResult ProfileDetailsPartial()
+        {
+            var username = HttpContext.User.Identity.Name;
+
+            var userDb = _context.Users.First(x => x.Username == username);
+            var userVm = new UserVM
+            {
+                Id = userDb.Id,
+                Username = userDb.Username,
+                FirstName = userDb.FirstName,
+                LastName = userDb.LastName,
+                Email = userDb.Email,
+                Phone = userDb.Phone,
+            };
+
+            return PartialView("_ProfileDetailsPartial", userVm);
+        }
+
+        // Promotions action
+        public IActionResult Promote(int id)
+        {
+            var user = _context.Users.FirstOrDefault(t => t.Id == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Update user role
+            user.Role = "Menager";
+            _context.SaveChanges();
+
+            
+            var existingManager = _context.Managers.FirstOrDefault(m => m.UserId == id);
+
+            if (existingManager == null)
+            {
+                // Add entry to Managers table
+                var manager = new Manager { UserId = id };
+                _context.Managers.Add(manager);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Index"); 
+        }
 
 
         // GET: UserController/Delete/5

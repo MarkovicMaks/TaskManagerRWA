@@ -9,7 +9,7 @@
 @if (User.IsInRole("Admin") || User.IsInRole("Menager"))
 {
     <p>
-        <a asp-action="Create" class="btn btn-outline-primary">Create New</a>
+        <a asp-action="Create" class="btn btn-success">Create New</a>
     </p>
 }
 
@@ -38,7 +38,7 @@
             </select>
         </div>
         <div class="col-auto">
-            <input type="submit" value="Go" name="submit" class="btn btn-primary" />
+            <input type="submit" value="Go" name="submit" class="btn btn-outline-success" />
         </div>
     </div>
 </form>
@@ -60,43 +60,58 @@
             </th>
             <th></th>
             <th></th>
+            <th></th>
             
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Tasks) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ManagerName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>@Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "btn btn-info" })</td>
-            <td> @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })</td>
-            @if (User.IsInRole("Admin") || User.IsInRole("Menager"))
-            {
-                <td>@Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-outline-danger" })</td>
-            }
-                else if (User.IsInRole("Employee"))
-            {
+        @foreach (var item in Model.Tasks)
+        {
+            <tr>
                 <td>
-                    @Html.ActionLink("Take", "Create", "TaskAssignment", new { taskId = item.Id }, new { @class = "btn btn-outline-success" })
+                    @Html.DisplayFor(modelItem => item.Title)
+
+                    
+                    
                 </td>
-            }
-            
-        </tr>
-}
+                <td>
+                    @Html.DisplayFor(modelItem => item.ManagerName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>@Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "btn btn-outline-success" })</td>
+                <td>@Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary" })</td>
+
+                @if (User.IsInRole("Admin") || User.IsInRole("Menager"))
+                {
+                    <td>@Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "btn btn-outline-danger" })</td>
+                }
+                else if (User.IsInRole("Employee"))
+                {
+                    @if (ViewBag.AssignedTaskIds != null && ((List<int>)ViewBag.AssignedTaskIds).Contains(item.Id))
+                    {
+                        <td>
+                            <span class="badge bg-warning text-dark">Assigned</span>
+                        </td>
+                    }
+                    else{
+                        <td>
+                            @Html.ActionLink("Take", "Create", "TaskAssignment", new { taskId = item.Id }, new { @class = "btn btn-outline-success" })
+                        </td>
+                    }
+                    
+                }
+            </tr>
+        }
     </tbody>
+
 </table>
 <nav>
-    <ul class="pagination">
+    <ul class="pagination ">
         @for (int i = Model.FromPager; i <= Model.ToPager; i++)
         {
             var linkText = @i.ToString();
