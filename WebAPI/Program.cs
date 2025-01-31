@@ -9,7 +9,8 @@ using TM.BL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
+var connectionString = builder.Configuration.GetConnectionString("TaskM");
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<LoggingService>();
@@ -65,7 +66,7 @@ builder.Services
         };
     });
 builder.Services.AddDbContext<TaskMgmtContext>(options => {
-    options.UseSqlServer("name=ConnectionStrings:ex6cs");
+    options.UseSqlServer(connectionString);
 });
 var app = builder.Build();
 

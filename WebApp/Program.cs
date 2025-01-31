@@ -1,5 +1,3 @@
-
-
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.App.AutoMapper;
@@ -7,10 +5,14 @@ using TM.BL.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+var connectionString = builder.Configuration.GetConnectionString("TaskM");
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<TaskMgmtContext>(options => {
-    options.UseSqlServer("name=ConnectionStrings:TaskM");
+builder.Services.AddDbContext<TaskMgmtContext>(options =>
+{
+    options.UseSqlServer(connectionString);
 });
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
