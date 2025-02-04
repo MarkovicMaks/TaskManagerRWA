@@ -27,30 +27,34 @@ namespace WebApp.Controllers
             _mapper = mapper;
             _configuration = configuration;
         }
-        // GET: TaskController
-        //public ActionResult Index()
-        //{
-        //    try
-        //    {
-        //        var taskVms = _context.Tasks
-        //            .Include(x => x.Manager)
-        //            .ProjectTo<TaskVM>(_mapper.ConfigurationProvider)
-        //            .ToList();
 
-        //        var assignedTaskIds = _context.TaskAssignments
-        //            .Select(t => t.TaskId)
-        //            .Distinct()
-        //            .ToList(); 
+        //GET: TaskController
+        public ActionResult PersonalTasks()
+        {
+            try
+            {
+                var username = User.Identity.Name;
+                var user = _context.Users.FirstOrDefault(u => u.Username == username);
+                if (user == null)
+                {
+                    return BadRequest("User not found in the database.");
+                }
 
-        //        ViewBag.AssignedTaskIds = assignedTaskIds; 
+                var taskVms = _context.TaskAssignments
+                    .Where(ta => ta.UserId == user.Id && ta.Status == "accepted")
+                    .Select(ta => ta.Task)
+                    .ProjectTo<TaskVM>(_mapper.ConfigurationProvider)
+                    .ToList();
 
-        //        return View(taskVms);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+                return View(taskVms);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
 
 
 

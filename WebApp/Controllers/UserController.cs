@@ -1,123 +1,323 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using TM.BL.Models;
+using WebApp.ViewModels;
+using WebApp.Security;
+using Microsoft.AspNetCore.Authorization;
 
-namespace TM.BL.Models;
-
-public partial class TaskMgmtContext : DbContext
+namespace WebApp.Controllers
 {
-    public TaskMgmtContext()
+
+    public class UserController : Controller
     {
+        private readonly TaskMgmtContext _context;
+
+        public UserController(TaskMgmtContext context)
+        {
+            _context = context;
+        }
+        // GET: UserController
+        [Authorize(Roles = "Menager")]
+        public ActionResult Index()
+        {
+            try
+            {
+                var UserVms = _context.Users.Select(x => new UserVM
+                {
+                    Id = x.Id,
+                    Username = x.Username,
+                    FirstName = x.FirstName,
+                    LastName = x.LastName,
+                    Role = x.Role,
+                    Email = x.Email,
+                    Phone = x.Phone,
+                }).ToList();
+
+                return View(UserVms);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public IActionResult Login(string returnUrl)
+        {
+            var loginVm = new LoginVM
+            {
+                ReturnUrl = returnUrl
+            };
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Login(LoginVM loginVm)
+        {
+            // Try to get a user from database
+            var existingUser =
+                _context
+                    .Users
+                    .FirstOrDefault(x => x.Username == loginVm.Username);
+
+            if (existingUser == null)
+            {
+                ModelState.AddModelError("", "Invalid username or password");
+                return View();
+            }
+
+            // Check is password hash matches
+            var b64hash = Security.PasswordHashProvider.GetHash(loginVm.Password, existingUser.PwdSalt);
+            if (b64hash != existingUser.PwdHash)
+            {
+                ModelState.AddModelError("", "Invalid username or password");
+                return View();
+            }
+
+            var claims = new List<Claim>() {
+                new Claim(ClaimTypes.Name, loginVm.Username),
+                new Claim(ClaimTypes.Role, existingUser.Role ?? "Emploeyee")
+            };
+
+            var claimsIdentity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var authProperties = new AuthenticationProperties();
+
+            // We need to wrap async code here into synchronous since we don't use async methods
+            System.Threading.Tasks.Task.Run(async () =>
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties)
+            ).GetAwaiter().GetResult();
+
+            if (loginVm.ReturnUrl != null)
+                return LocalRedirect(loginVm.ReturnUrl);
+            else if (existingUser.Role == "Admin")
+                return RedirectToAction("Index", "AdminHome");
+            else if (existingUser.Role == "Menager")
+                return RedirectToAction("Index", "AdminHome");
+            else if (existingUser.Role == "Employee")
+                return RedirectToAction("Index", "Home");
+            else
+                return View();
+        }
+
+        public IActionResult Logout()
+        {
+            System.Threading.Tasks.Task.Run(async () =>
+                await HttpContext.SignOutAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme)
+            ).GetAwaiter().GetResult();
+
+            return View();
+        }
+
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Register(UserVM userVm)
+        {
+            try
+            {
+                // Check if there is such a username in the database already
+                var trimmedUsername = userVm.Username.Trim();
+                if (_context.Users.Any(x => x.Username.Equals(trimmedUsername)))
+                    return BadRequest($"Username {trimmedUsername} already exists");
+
+                // Hash the password
+                var b64salt = PasswordHashProvider.GetSalt();
+                var b64hash = PasswordHashProvider.GetHash(userVm.Password, b64salt);
+
+                //Congradulation you are a manager (if you have no friends)
+                if (_context.Users.Count() <= 0)
+                {
+                    userVm.Role = "Menager";
+                }
+
+                // Create user from DTO and hashed password
+                var user = new User
+                {
+                    Id = userVm.Id,
+                    Username = userVm.Username,
+                    PwdHash = b64hash,
+                    PwdSalt = b64salt,
+                    FirstName = userVm.FirstName,
+                    LastName = userVm.LastName,
+                    Email = userVm.Email,
+                    Phone = userVm.Phone,
+                    Role = userVm.Role
+                };
+
+                // Add user and save changes to database
+                _context.Add(user);
+                _context.SaveChanges();
+
+                // Update DTO Id to return it to the client
+                userVm.Id = user.Id;
+
+                return RedirectToAction("Index", "Home");
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [Authorize]
+        public IActionResult ProfileDetails()
+        {
+            var username = HttpContext.User.Identity.Name;
+
+            var userDb = _context.Users.First(x => x.Username == username);
+            var userVm = new UserVM
+            {
+                Id = userDb.Id,
+                Username = userDb.Username,
+                FirstName = userDb.FirstName,
+                LastName = userDb.LastName,
+                Email = userDb.Email,
+                Phone = userDb.Phone,
+            };
+
+            return View(userVm);
+        }
+
+        [Authorize]
+        public IActionResult ProfileEdit(int id)
+        {
+            var userDb = _context.Users.First(x => x.Id == id);
+            var userVm = new UserVM
+            {
+                Id = userDb.Id,
+                Username = userDb.Username,
+                FirstName = userDb.FirstName,
+                LastName = userDb.LastName,
+                Email = userDb.Email,
+                Phone = userDb.Phone,
+            };
+
+            return View(userVm);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult ProfileEdit(int id, UserVM userVm)
+        {
+            var userDb = _context.Users.First(x => x.Id == id);
+            userDb.FirstName = userVm.FirstName;
+            userDb.LastName = userVm.LastName;
+            userDb.Email = userVm.Email;
+            userDb.Phone = userVm.Phone;
+
+            _context.SaveChanges();
+
+            return RedirectToAction("ProfileDetails");
+        }
+
+        public JsonResult GetProfileData(int id)
+        {
+            var userDb = _context.Users.First(x => x.Id == id);
+            return Json(new
+            {
+                userDb.FirstName,
+                userDb.LastName,
+                userDb.Email,
+                userDb.Phone,
+            });
+        }
+
+        [HttpPut]
+        public ActionResult SetProfileData(int id, [FromBody] UserVM userVm)
+        {
+            var userDb = _context.Users.First(x => x.Id == id);
+            userDb.FirstName = userVm.FirstName;
+            userDb.LastName = userVm.LastName;
+            userDb.Email = userVm.Email;
+            userDb.Phone = userVm.Phone;
+
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [Authorize]
+        public IActionResult ProfileDetailsPartial()
+        {
+            var username = HttpContext.User.Identity.Name;
+
+            var userDb = _context.Users.First(x => x.Username == username);
+            var userVm = new UserVM
+            {
+                Id = userDb.Id,
+                Username = userDb.Username,
+                FirstName = userDb.FirstName,
+                LastName = userDb.LastName,
+                Email = userDb.Email,
+                Phone = userDb.Phone,
+            };
+
+            return PartialView("_ProfileDetailsPartial", userVm);
+        }
+
+        // Promotions action
+        public IActionResult Promote(int id)
+        {
+            var user = _context.Users.FirstOrDefault(t => t.Id == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Update user role
+            user.Role = "Menager";
+            _context.SaveChanges();
+
+
+            var existingManager = _context.Managers.FirstOrDefault(m => m.UserId == id);
+
+            if (existingManager == null)
+            {
+                // Add entry to Managers table
+                var manager = new Manager { UserId = id };
+                _context.Managers.Add(manager);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Index");
+        }
+
+
+        // GET: UserController/Delete/5
+        public ActionResult Delete(int id)
+        {
+            return View();
+        }
+
+        // POST: UserController/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id, IFormCollection collection)
+        {
+            try
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
     }
-
-    public TaskMgmtContext(DbContextOptions<TaskMgmtContext> options)
-        : base(options)
-    {
-    }
-
-    public virtual DbSet<Manager> Managers { get; set; }
-
-    public virtual DbSet<Skill> Skills { get; set; }
-
-    public virtual DbSet<Task> Tasks { get; set; }
-
-    public virtual DbSet<TaskAssignment> TaskAssignments { get; set; }
-
-    public virtual DbSet<TaskSkill> TaskSkills { get; set; }
-
-    public virtual DbSet<User> Users { get; set; }
-
-    public virtual DbSet<UserSkill> UserSkills { get; set; }
-
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:TaskM");
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Manager>(entity =>
-        {
-            entity.HasIndex(e => e.UserId, "UQ__Managers__1788CC4D816A5785").IsUnique();
-
-            entity.HasOne(d => d.User).WithOne(p => p.Manager)
-                .HasForeignKey<Manager>(d => d.UserId)
-                .HasConstraintName("FK_Managers_UserId");
-        });
-
-        modelBuilder.Entity<Skill>(entity =>
-        {
-            entity.Property(e => e.Name).HasMaxLength(255);
-        });
-
-        modelBuilder.Entity<Task>(entity =>
-        {
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Description).IsUnicode(false);
-            entity.Property(e => e.Status).HasMaxLength(255);
-            entity.Property(e => e.Title).HasMaxLength(255);
-
-            entity.HasOne(d => d.Manager).WithMany(p => p.Tasks)
-                .HasForeignKey(d => d.ManagerId)
-                .HasConstraintName("FK_Tasks_ManagerId");
-        });
-
-        modelBuilder.Entity<TaskAssignment>(entity =>
-        {
-            entity.Property(e => e.Status).HasMaxLength(255);
-
-            entity.HasOne(d => d.Task).WithMany(p => p.TaskAssignments)
-                .HasForeignKey(d => d.TaskId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TaskAssignments_TaskId");
-
-            entity.HasOne(d => d.User).WithMany(p => p.TaskAssignments)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TaskAssignments_UserId");
-        });
-
-        modelBuilder.Entity<TaskSkill>(entity =>
-        {
-            entity.HasOne(d => d.Skill).WithMany(p => p.TaskSkills)
-                .HasForeignKey(d => d.SkillId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TaskSkills_SkillId");
-
-            entity.HasOne(d => d.Task).WithMany(p => p.TaskSkills)
-                .HasForeignKey(d => d.TaskId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TaskSkills_TaskId");
-        });
-
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.Property(e => e.Email).HasMaxLength(256);
-            entity.Property(e => e.FirstName).HasMaxLength(256);
-            entity.Property(e => e.LastName).HasMaxLength(256);
-            entity.Property(e => e.Phone).HasMaxLength(256);
-            entity.Property(e => e.PwdHash).HasMaxLength(256);
-            entity.Property(e => e.PwdSalt).HasMaxLength(256);
-            entity.Property(e => e.Role).HasMaxLength(255);
-            entity.Property(e => e.Username).HasMaxLength(255);
-        });
-
-        modelBuilder.Entity<UserSkill>(entity =>
-        {
-            entity.HasOne(d => d.Skill).WithMany(p => p.UserSkills)
-                .HasForeignKey(d => d.SkillId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserSkills_SkillId");
-
-            entity.HasOne(d => d.User).WithMany(p => p.UserSkills)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserSkills_UserId");
-        });
-
-        OnModelCreatingPartial(modelBuilder);
-    }
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
